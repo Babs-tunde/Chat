@@ -1,0 +1,63 @@
+<!-- room.html -->
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/room.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h2>Welcome to the {{ room }} chat room!</h2>
+
+    <div id="messages" class="mt-5">
+        {% for message in messages %}
+            <div class="message">
+                <strong>{{ message.user }}:</strong> {{ message.value }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <form id="message-form" class="mt-5">
+        {% csrf_token %}
+        <input type="hidden" name="room" value="{{ room }}">
+        <input type="hidden" name="username" value="{{ username }}">
+        <div class="form-group">
+            <label for="message">Message:</label>
+            <input type="text" class="form-control" id="message" name="message">
+        </div>
+        <button type="submit" class="btn btn-primary">Send</button>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script   src="https://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
+<script>
+    // websocket connection
+    const socket = new WebSocket('ws://localhost:8000/ws/chat/' + {{ room }} + '/');
+
+    // message form submission
+    document.querySelector('#message-form').addEventListener('submit', e => {
+        e.preventDefault();
+        const message = document.querySelector('#message').value;
+        socket.send(JSON.stringify({
+            'message': message,
+            'username': {{ username }},
+            'room': {{ room }}
+        }));
+        document.querySelector('#message').value = '';
+    });
+
+    // websocket message received
+    socket.onmessage = e => {
+        const data = JSON.parse(e.data);
+        const message = document.createElement('div');
+        message.innerHTML = `<strong>${data.username}:</strong> ${data.message}`;
+        document.querySelector('#messages').appendChild(message);
+    };
+</script>
+{% endblock %}

@@ -1,0 +1,35 @@
+<!-- room.html -->
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h2>Welcome to the {{ room }} chat room!</h2>
+
+    <div id="messages" class="mt-5">
+        {% for message in messages %}
+            <div class="message">
+                <strong>{{ message.user }}:</strong> {{ message.value }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <form id="message-form" class="mt-5">
+        {% csrf_token %}
+        <input type="hidden" name="room" value="{{ room }}">
+        <input type="hidden" name="username" value="{{ username }}">
+        <div class="form-group">
+            <label for="message">Message:</label>
+            <input type="text" class="form-control" id="message" name="message">
+        </div>
+        <button type="submit" class="btn btn-primary">Send</button>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/room.js' %}"></script>
+{% endblock %}
